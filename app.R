@@ -45,7 +45,7 @@ ui <- dashboardPage(
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
       menuItem("Individual", tabName = "individual", icon = icon("person")),
       menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
-      menuItem("Distribution", tabName = "StatDistribution", icon = icon("chart-area"))
+      menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area"))
     )
   ),
   dashboardBody(
@@ -138,8 +138,8 @@ ui <- dashboardPage(
           )
 
   ),
-  tabItem(tabName = "StatDistribution",
-          h2("Find Which distribution fits the players")
+  tabItem(tabName = "Progression",
+          h2("Show player progression over generations")
           
   )
   )
@@ -268,7 +268,11 @@ server <- function(input, output) {
      )
    })
 
-    
+  ###
+  # Player progression over generations
+  ###
+  
+   ## INSERT LOGIC HERE
 }
 
 # Run the application 
