@@ -8,7 +8,6 @@ library(DT)
 library(tidyverse)
 library(forcats)
 
-
 # General Functions
 highlight <- function(x, value, col.value, col=NA, ...){
   hst <- hist(x, breaks=20)
@@ -16,6 +15,38 @@ highlight <- function(x, value, col.value, col=NA, ...){
   cols <- rep(col, length(hst$counts))
   cols[idx] <- col.value
   hist(x, col=cols, breaks=20)
+}
+
+# Function for plotting player overall and potential over the games
+plot_player_rating <- function(player_name) {
+  player_overalls <- c()
+  player_potentials <- c()
+  
+  for (i in 1:length(fifa_data_all_years)) {
+    player_data <- fifa_data_all_years[[i]][fifa_data_all_years[[i]]$Name == player_name, ]
+    if (length(player_data) > 0) {
+      player_overalls <- c(player_overalls, player_data$Overall[1])
+      player_potentials <- c(player_potentials, player_data$Potential[1])
+    } else {
+      player_overalls <- c(player_overalls, NA)
+      player_potentials <- c(player_potentials, NA)
+    }
+  }
+  
+  data <- data.frame(Year = years, Overall = player_overalls, Potential = player_potentials)
+  
+  ggplot(data, aes(x = Year, y = Overall)) +
+    geom_line(aes(y = Overall), color = "blue", size = 1.5) +
+    geom_point(aes(y = Overall), color = "red", size = 3) +
+    geom_text(aes(y = Overall, label = Overall), hjust = 0.5, vjust = -1.5, size = 3) +
+    geom_line(aes(y = Potential), color = "blue", size = 1.5) +
+    geom_point(aes(y = Potential), color = "red", size = 3) +
+    geom_text(aes(y = Potential, label = Potential), hjust = 0.5, vjust = -1.5, size = 3) +
+    geom_ribbon(aes(ymin=Overall,ymax=Potential), fill="blue", alpha=0.2) +
+    labs(x = "Year", y = "Rating", title = paste("Overall and Potential Ratings of", player_name, "over the Years")) +
+    xlim(17, 22) +
+    ylim(30,99) +
+    theme_minimal()
 }
 
 # Map a number to a colour (to highlight how good/bad a stat is)
@@ -33,9 +64,13 @@ map_num_to_col <- function(num) {
 
 # Get certain columns of the fifa data
 # data <- readRDS(file="fifa_data.Rda")
-data <- read.csv('FIFA22_official_data.csv')
+data <- read.csv('data/FIFA22_official_data.csv')
 data <- data[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
 
+years <- c(17, 18, 19, 20, 21, 22)
+fifa_data_all_years <- lapply(years, function(year) {
+  read_csv(paste0("data/FIFA", year, "_official_data.csv"), skip_empty_rows = TRUE)[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength', 'Potential')]
+})
 
 # UI of the app (using Shiny Dashboard)
 ui <- dashboardPage(
@@ -45,7 +80,9 @@ ui <- dashboardPage(
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
       menuItem("Individual", tabName = "individual", icon = icon("person")),
       menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
-      menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area"))
+      menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area")),
+      menuItem("Position Evaluator", tabName = "PositionEvaluator", icon = icon("map"))
+      menuItem("Card Stats", tabName = "CardStats", icon = icon("chart-bar")),
     )
   ),
   dashboardBody(
@@ -53,6 +90,11 @@ ui <- dashboardPage(
       # First tab content
     tabItem(tabName = "individual",
     # Boxes need to be put in a row (or column)
+    box(width = 12,
+    inputPanel(
+      selectInput("year", "Select a year:", choices = c(2017,2018,2019,2020,2021,2022))
+    ),
+    ),
     fluidRow(
       box(width=12,
           DT::dataTableOutput("mytable"),
@@ -132,15 +174,18 @@ ui <- dashboardPage(
               h2("What we're looking for: A Striker"),
               valueBox("Finishing", "Good at Shooting", icon = icon("meteor"),color='green'),
               valueBox("Pace", "Quick and agile", icon = icon("person-running"),color='green'),
-              valueBox("Strenth", "Tall and Strong", icon = icon("dumbbell"),color='green'),
+              valueBox("Strength", "Tall and Strong", icon = icon("dumbbell"),color='green'),
               
             )
           )
 
   ),
-  tabItem(tabName = "Progression",
-          h2("Show player progression over generations")
-          
+  tabItem(tabName = "PlayerProgression",
+          h2("Show player progression over generations"),
+          uiOutput("name"),
+          box(width=12,
+              plotOutput("ribbonplot")
+          )
   )
   )
  
@@ -155,7 +200,7 @@ server <- function(input, output) {
     #####
     output$mytable = DT::renderDataTable({
       DT::datatable(
-      data,
+      fifa_data_all_years[[as.numeric(input$year) - 2016]],
       options = list(
         autoWidth = FALSE, scrollX = TRUE),
       selection = list(mode = 'single', selected = 1)
@@ -165,15 +210,15 @@ server <- function(input, output) {
     output$histogram = renderPlot({
       s = input$mytable_rows_selected
      
-      hist(data[[input$histogram_col]], breaks=20)
-      if (length(s)) highlight(data[[input$histogram_col]], data[s,][[input$histogram_col]], "red")
+      hist(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], breaks=20)
+      if (length(s)) highlight(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], fifa_data_all_years[[as.numeric(input$year) - 2016]][s,][[input$histogram_col]], "red")
     })
     # 
     output$lollipop = renderPlot({
       s = input$mytable_rows_selected
 
       # Get data
-      player_selected <- data[s,c('Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
+      player_selected <- fifa_data_all_years[[as.numeric(input$year) - 2016]][s,c('Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
 
       # transpose all but the first column (name)
       tp <- as.data.frame(t(player_selected))
@@ -271,8 +316,22 @@ server <- function(input, output) {
   ###
   # Player progression over generations
   ###
+
+  my_list <- reactive({
+    data <- fifa_data_all_years[[1]]$Name
+    my_list <- as.character(data)
+
+  })
+
+  output$name <- renderUI({
+
+    selectInput(inputId = "name", label = "Name", choices = my_list())
+  })
   
-   ## INSERT LOGIC HERE
+  output$ribbonplot <- renderPlot({
+    plot_player_rating(input$name)
+  })
+  
 }
 
 # Run the application 
