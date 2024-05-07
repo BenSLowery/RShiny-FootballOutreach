@@ -14,7 +14,7 @@ highlight <- function(x, value, col.value, col=NA, ...){
   idx <- findInterval(value, hst$breaks)
   cols <- rep(col, length(hst$counts))
   cols[idx] <- col.value
-  hist(x, col=cols, breaks=20)
+  hist(x, col=cols, breaks=20, main=NULL, xlab=NULL, ylab='Frequency')
 }
 
 # Function for plotting player overall and potential over the games
@@ -66,9 +66,9 @@ get_ut_stats <- function(player_name, year) {
 
 # Map a number to a colour (to highlight how good/bad a stat is)
 map_num_to_col <- function(num) {
-  if (num < 50) {
+  if (num <= 50) {
     colour <- 'red'
-  } else if (51 < num & num < 79) {
+  } else if (51 <= num & num <= 79) {
     colour <- 'orange'
   } else {
     colour <- 'green'
@@ -126,7 +126,8 @@ ui <- dashboardPage(
                        "Short Passing" = "ShortPassing",
                        "Dribbling" = "Dribbling",
                        "Standing Tackle" = "StandingTackle",
-                       "Strength" = "Strength"
+                       "Strength" = "Strength",
+                       'Potential' = 'Potential'
                        )),
     
          plotOutput('histogram')
@@ -163,11 +164,11 @@ ui <- dashboardPage(
           fluidRow(
             box(width=4,
             selectInput("ws2_player_select", "Select a Player:",
-              c("Erling Haaland" = 249,
-                              "Nicolas Otmamendi" = 2519,
-                              "Jean Michael Seri" = 637,
-                              "Robbie Mckenzie" = 10042,
-                              "Kylian Hazard" =6353
+              c("Erling Haaland" = 252,
+                              "Nicolas Otmamendi" = 2574,
+                              "Jean Michael Seri" = 650,
+                              "Robbie Mckenzie" = 10215,
+                              "Thorgan Hazard" = 306
               )),
               h3(textOutput("w2s_player_name")),
               p(textOutput("w2s_player_club")),
@@ -226,35 +227,39 @@ server <- function(input, output) {
     
     output$histogram = renderPlot({
       s = input$mytable_rows_selected
-     
-      hist(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], breaks=20)
-      if (length(s)) highlight(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], fifa_data_all_years[[as.numeric(input$year) - 2016]][s,][[input$histogram_col]], "red")
+      if (length(s)) {
+        hist(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], breaks=20 ,main=NULL, xlab=NULL, ylab='Frequency')
+        highlight(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], fifa_data_all_years[[as.numeric(input$year) - 2016]][s,][[input$histogram_col]], "red")
+      } else {
+        hist(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], breaks=20, main=NULL, xlab=NULL, ylab='Frequency')
+      }
     })
     # 
     output$lollipop = renderPlot({
       s = input$mytable_rows_selected
+      if (length(s)){
+        # Get data
+        player_selected <- fifa_data_all_years[[as.numeric(input$year) - 2016]][s,c('Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
+  
+        # transpose all but the first column (name)
+        tp <- as.data.frame(t(player_selected))
+        tp <- cbind(attribute = rownames(tp), tp)
+        rownames(tp) <- 1:nrow(tp)
+        colnames(tp) <- c('attribute', 'val')
+  
+        tp %>%
+          arrange(val) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
+          mutate(attribute=factor(attribute, levels=attribute)) %>%   # This trick update the factor levels
+          ggplot( aes(x=attribute, y=val)) +
+          geom_segment(aes(xend=attribute, yend=0)) +
+          geom_point( size=4, color="blue") +
+          ylim(0,100) +
+          coord_flip() +
+          xlab("Attribute") +
+          ylab("Score out of 100") +
+          theme_bw()
 
-      # Get data
-      player_selected <- fifa_data_all_years[[as.numeric(input$year) - 2016]][s,c('Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
-
-      # transpose all but the first column (name)
-      tp <- as.data.frame(t(player_selected))
-      tp <- cbind(attribute = rownames(tp), tp)
-      rownames(tp) <- 1:nrow(tp)
-      colnames(tp) <- c('attribute', 'val')
-
-      tp %>%
-        arrange(val) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
-        mutate(attribute=factor(attribute, levels=attribute)) %>%   # This trick update the factor levels
-        ggplot( aes(x=attribute, y=val)) +
-        geom_segment(aes(xend=attribute, yend=0)) +
-        geom_point( size=4, color="blue") +
-        ylim(0,100) +
-        coord_flip() +
-        xlab("Attribute") +
-        ylab("Score out of 100") +
-        theme_bw()
-
+      }
     })
     
     
