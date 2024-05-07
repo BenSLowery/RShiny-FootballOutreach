@@ -32,7 +32,22 @@ plot_player_rating <- function(player_name) {
       player_potentials <- c(player_potentials, NA)
     }
   }
+
+get_ut_stats <- function(player_name, year) {
+  player_data <- fifa_data[year - 2017 + 1,][fifa_data[year - 2017 + 1,]$Name == player_name,]
   
+  ut_stats <- list(
+    Pace = round(player_data$SprintSpeed * 0.55 + player_data$Acceleration * 0.45),
+    Shooting = round(player_data$Finishing * 0.45 + player_data$ShotPower * 0.2 + player_data$ShotPower * 0.2 + player_data$Positioning * 0.05 + player_data$Penalties * 0.05 + player_data$Volleys * 0.05),
+    Passing = round(player_data$ShortPassing * 0.35 + player_data$Vision * 0.2 + player_data$Crossing * 0.2 + player_data$LongPassing * 0.15 + player_data$Curve * 0.05 + player_data$FKAccuracy * 0.05),
+    Dribbling = round(player_data$Dribbling * 0.5 + player_data$BallControl * 0.35 + player_data$Agility * 0.1 + player_data$Balance * 0.05),
+    Defending = round(player_data$Marking * 0.3 + player_data$Interceptions * 0.2 + player_data$StandingTackle * 0.3 + player_data$HeadingAccuracy * 0.1 + player_data$SlidingTackle * 0.1),
+    Physicality = round(player_data$Strength * 0.5 + player_data$Stamina * 0.25 + player_data$Aggression * 0.2 + player_data$Jumping * 0.05)
+  )
+  
+  return(ut_stats)
+}
+
   data <- data.frame(Year = years, Overall = player_overalls, Potential = player_potentials)
   
   ggplot(data, aes(x = Year, y = Overall)) +
@@ -69,7 +84,7 @@ data <- data[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'S
 
 years <- c(17, 18, 19, 20, 21, 22)
 fifa_data_all_years <- lapply(years, function(year) {
-  read_csv(paste0("data/FIFA", year, "_official_data.csv"), skip_empty_rows = TRUE)[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength', 'Potential')]
+  read_csv(paste0("data/FIFA", year, "_official_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE)[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength', 'Potential')]
 })
 
 # UI of the app (using Shiny Dashboard)
@@ -81,8 +96,7 @@ ui <- dashboardPage(
       menuItem("Individual", tabName = "individual", icon = icon("person")),
       menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
       menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area")),
-      menuItem("Position Evaluator", tabName = "PositionEvaluator", icon = icon("map"))
-      menuItem("Card Stats", tabName = "CardStats", icon = icon("chart-bar")),
+      menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map"))
     )
   ),
   dashboardBody(
@@ -121,7 +135,7 @@ ui <- dashboardPage(
      #TODO - Lollipop chart
      box(width = 6,
          plotOutput('lollipop')
-        ),
+     )
       
     )
   ),
@@ -142,7 +156,7 @@ ui <- dashboardPage(
 
             ),
             DT::dataTableOutput('PlayerComparison')
-          ),
+          )
   ),
   tabItem(tabName = "w2s",
           h2("Given a position, we then give a list of players, and see who's best"),
@@ -157,7 +171,7 @@ ui <- dashboardPage(
               )),
               h3(textOutput("w2s_player_name")),
               p(textOutput("w2s_player_club")),
-              p(textOutput("w2s_player_age")),
+              p(textOutput("w2s_player_age"))
             ),
             box(width=8,
             # A static valueBox
@@ -166,7 +180,7 @@ ui <- dashboardPage(
             valueBoxOutput("PlayerStrengthBox"),
             valueBoxOutput("PlayerPassingBox"),
             valueBoxOutput("PlayerDribblingBox"),
-            valueBoxOutput("PlayerTacklingBox"),
+            valueBoxOutput("PlayerTacklingBox")
             )
           ),
           fluidRow(
@@ -174,8 +188,7 @@ ui <- dashboardPage(
               h2("What we're looking for: A Striker"),
               valueBox("Finishing", "Good at Shooting", icon = icon("meteor"),color='green'),
               valueBox("Pace", "Quick and agile", icon = icon("person-running"),color='green'),
-              valueBox("Strength", "Tall and Strong", icon = icon("dumbbell"),color='green'),
-              
+              valueBox("Strength", "Tall and Strong", icon = icon("dumbbell"),color='green')
             )
           )
 
@@ -186,11 +199,15 @@ ui <- dashboardPage(
           box(width=12,
               plotOutput("ribbonplot")
           )
-  )
-  )
+  ),
+  tabItem(tabName = "scouter",
+        h2("Ultimate Scouter"),
+        # Add Table in at the top of the page so that if two players have the same name, we can select the correct one
+      
  
   )
-)
+  )
+))
 
 # Server side logic
 server <- function(input, output) {
