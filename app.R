@@ -44,7 +44,7 @@ plot_player_rating <- function(player_name) {
   ggplot(data, aes(x = Year, y = Overall)) +
     geom_line(aes(y = Overall), color = "blue", linewidth = 1.5) +
     geom_point(aes(y = Overall), color = "red", size = 3) +
-    geom_text(aes(y = Overall, label = Overall), hjust = 0.5, vjust = -1.5, size = 3) +
+    geom_text(aes(y = Overall, label = Overall), hjust = 0.5, vjust = 2.5, size = 3) +
     geom_line(aes(y = Potential), color = "blue", linewidth = 1.5) +
     geom_point(aes(y = Potential), color = "red", size = 3) +
     geom_text(aes(y = Potential, label = Potential), hjust = 0.5, vjust = -1.5, size = 3) +
@@ -55,20 +55,6 @@ plot_player_rating <- function(player_name) {
     theme_minimal()
 }
 
-get_ut_stats <- function(player_ID, year) {
-  player_data <- fifa_data_all_years[[year - 2016]][fifa_data_all_years[[year - 2016]]$ID == player_ID,]
-  
-  ut_stats <- list(
-    Pace = round(player_data$SprintSpeed * 0.55 + player_data$Acceleration * 0.45),
-    Shooting = round(player_data$Finishing * 0.45 + player_data$ShotPower * 0.2 + player_data$ShotPower * 0.2 + player_data$Positioning * 0.05 + player_data$Penalties * 0.05 + player_data$Volleys * 0.05),
-    Passing = round(player_data$ShortPassing * 0.35 + player_data$Vision * 0.2 + player_data$Crossing * 0.2 + player_data$LongPassing * 0.15 + player_data$Curve * 0.05 + player_data$FKAccuracy * 0.05),
-    Dribbling = round(player_data$Dribbling * 0.5 + player_data$BallControl * 0.35 + player_data$Agility * 0.1 + player_data$Balance * 0.05),
-    Defending = round(player_data$Marking * 0.3 + player_data$Interceptions * 0.2 + player_data$StandingTackle * 0.3 + player_data$HeadingAccuracy * 0.1 + player_data$SlidingTackle * 0.1),
-    Physicality = round(player_data$Strength * 0.5 + player_data$Stamina * 0.25 + player_data$Aggression * 0.2 + player_data$Jumping * 0.05)
-  )
-  
-  return(ut_stats)
-}
 
 get_player_position_ratings <- function(player_ID, year) {
     rating_dict <- {}
@@ -99,51 +85,16 @@ map_num_to_col <- function(num) {
 data <- read.csv('data/FIFA22_official_data.csv')
 data <- data[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
 
-years <- c(17, 18, 19, 20, 21, 22)
+years <- c(17,18,19,20,21,22)
 fifa_data_all_years <- lapply(years, function(year) {
-  read_csv(paste0("data/FIFA", year, "_official_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
+  read_csv(paste0("data_new/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
 })
 
-# in the fifa 20, 21, 22 data remove the marking column and rename the defensive awareness column to marking
-for (i in 4:6) {
-  fifa_data_all_years[[i]] <- fifa_data_all_years[[i]] %>%
-    select(-Marking) %>%
-    rename(Marking = `DefensiveAwareness`)
-}
 
 value_table <- read_csv('data/value_table.csv', show_col_types = FALSE) %>% 
   tibble::column_to_rownames('Stat')
 
-# Get common columns
-common_columns <- Reduce(intersect, lapply(fifa_data_all_years, colnames))
 
-# Remove columns that are not common to every dataframe
-fifa_data_all_years <- lapply(fifa_data_all_years, function(df) select(df, all_of(common_columns)))
-
-for (i in seq_along(fifa_data_all_years)) {
-  fifa_data_all_years[[i]] <- fifa_data_all_years[[i]] %>%
-    select(-c(Photo, Flag, `Club Logo`, `Real Face`, `Jersey Number`, `Loaned From`, `Contract Valid Until`, Joined, Position)) %>%
-    mutate(Club = replace_na(Club, 'No Club'))
-}
-
-# Go through data and remove any players with a number at the beginning of their name
-for (i in seq_along(fifa_data_all_years)) {
-  fifa_data_all_years[[i]] <- fifa_data_all_years[[i]] %>%
-    filter(!grepl("^\\d", Name))
-}
-
-# Change the data type of the value and wage colums to numeric substituting the K and M with the appropriate number
-for (i in seq_along(fifa_data_all_years)) {
-  fifa_data_all_years[[i]] <- fifa_data_all_years[[i]] %>%
-    mutate(Value = as.numeric(gsub("€", "", gsub("M", "e6", gsub("K", "e3", Value)))), 
-           Wage = as.numeric(gsub("€", "", gsub("M", "e6", gsub("K", "e3", Wage)))))
-}
-
-# Rename the best position column to Preferred Position
-for (i in seq_along(fifa_data_all_years)) {
-  fifa_data_all_years[[i]] <- fifa_data_all_years[[i]] %>%
-    rename(`Preferred Position` = `Best Position`)
-}
 
 
 # UI of the app (using Shiny Dashboard)
@@ -151,8 +102,8 @@ ui <- dashboardPage(
   dashboardHeader(title = "Scout App"),
   dashboardSidebar(
     sidebarMenu(
+      menuItem("Home", tabName='home', icon=icon('house')),
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
-      #menuItem("Individual", tabName = "individual", icon = icon("person")),
       menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
       menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area")),
       menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map"))
@@ -160,45 +111,8 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
-      # First tab content
-  #   tabItem(tabName = "individual",
-  #   # Boxes need to be put in a row (or column)
-  #   box(width = 12,
-  #   # inputPanel(
-  #   #   selectInput("year", "Select a year:", choices = c(2017,2018,2019,2020,2021,2022))
-  #   # ),
-  #   ),
-  #   fluidRow(
-  #     box(width=12,
-  #         DT::dataTableOutput("mytable"),
-  #         tags$br(),
-  #         tags$br(),
-  #         #actionButton("clear", "Clear Selection"), 
-  #     ),
-  #        
-  #     box(width=6,
-  #        selectInput("histogram_col", "Attribute compared to others:",
-  #                    c("Age" = "Age",
-  #                      "Overall" = "Overall",
-  #                      "Acceleration" = "Acceleration",
-  #                      "Finishing" = "Finishing",
-  #                      "Short Passing" = "ShortPassing",
-  #                      "Dribbling" = "Dribbling",
-  #                      "Standing Tackle" = "StandingTackle",
-  #                      "Strength" = "Strength",
-  #                      'Potential' = 'Potential'
-  #                      )),
-  #   
-  #        plotOutput('histogram')
-  #     ),
-  # 
-  #    #TODO - Lollipop chart
-  #    box(width = 6,
-  #        plotOutput('lollipop')
-  #    )
-  #     
-  #   )
-  # ),
+  
+  tabItem(tabName = "home", h1('Welcome')),
   tabItem(tabName = "comparsion",
           h2("Compare Players from Man City and Benfica"),
           box(width=12,
@@ -289,12 +203,12 @@ ui <- dashboardPage(
         selectInput("histogram_col", "Attribute compared to others:",
                      c("Age" = "Age",
                        "Overall" = "Overall",
-                       "Acceleration" = "Acceleration",
-                       "Finishing" = "Finishing",
-                       "Short Passing" = "ShortPassing",
+                       "Pace" = "Pace",
+                       "Shooting" = "Shooting",
+                       "Passing" = "Passing",
                        "Dribbling" = "Dribbling",
-                       "Standing Tackle" = "StandingTackle",
-                       "Strength" = "Strength",
+                       "Defending" = "Defending",
+                       "Physicality" = "Physicality",
                        'Potential' = 'Potential'
                        )),
         plotOutput('scoutinghistogram')
@@ -330,57 +244,6 @@ ui <- dashboardPage(
 
 # Server side logic
 server <- function(input, output, session) {
-  
-    #####
-    # Main Player Database logic
-    #####
-    output$mytable = DT::renderDataTable({
-      DT::datatable(
-      fifa_data_all_years[[as.numeric(input$year) - 2016]],
-      options = list(
-        autoWidth = FALSE, scrollX = TRUE),
-      selection = list(mode = 'single', selected = 1)
-      )
-    })
-    
-    output$histogram = renderPlot({
-      s = input$mytable_rows_selected
-      if (length(s)) {
-        hist(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], breaks=20 ,main=NULL, xlab=NULL, ylab='Frequency')
-        highlight(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], fifa_data_all_years[[as.numeric(input$year) - 2016]][s,][[input$histogram_col]], "red")
-      } else {
-        hist(fifa_data_all_years[[as.numeric(input$year) - 2016]][[input$histogram_col]], breaks=20, main=NULL, xlab=NULL, ylab='Frequency')
-      }
-    })
-    # 
-    output$lollipop = renderPlot({
-      s = input$mytable_rows_selected
-      if (length(s)){
-        # Get data
-        player_selected <- fifa_data_all_years[[as.numeric(input$year) - 2016]][s,c('Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
-  
-        # transpose all but the first column (name)
-        tp <- as.data.frame(t(player_selected))
-        tp <- cbind(attribute = rownames(tp), tp)
-        rownames(tp) <- 1:nrow(tp)
-        colnames(tp) <- c('attribute', 'val')
-  
-        tp %>%
-          arrange(val) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
-          mutate(attribute=factor(attribute, levels=attribute)) %>%   # This trick update the factor levels
-          ggplot( aes(x=attribute, y=val)) +
-          geom_segment(aes(xend=attribute, yend=0)) +
-          geom_point( size=4, color="blue") +
-          ylim(0,100) +
-          coord_flip() +
-          xlab("Attribute") +
-          ylab("Score out of 100") +
-          theme_bw()
-
-      }
-    })
-    
-    
     #####
     # Player scouting logic
     #####
@@ -414,41 +277,41 @@ server <- function(input, output, session) {
   
    output$PlayerPaceBox <- renderValueBox({
      valueBox(
-       paste0(data[input$ws2_player_select, 'Acceleration']), "Speed", icon = icon("person-running"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Acceleration'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Pace']), "Speed", icon = icon("person-running"),
+       color = map_num_to_col(data[input$ws2_player_select, 'Pace'])
      )
    })
    
    output$PlayerShootingBox <- renderValueBox({
      valueBox(
-       paste0(data[input$ws2_player_select, 'Finishing']), "Shooting", icon = icon("meteor"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Finishing'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Shooting']), "Shooting", icon = icon("meteor"),
+       color = map_num_to_col(data[input$ws2_player_select, 'Shooting'])
      )
    })
    
    output$PlayerStrengthBox <- renderValueBox({
      valueBox(
-       paste0(data[input$ws2_player_select, 'Strength']), "Strength", icon = icon("dumbbell"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Strength'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Physicality']), "Strength", icon = icon("dumbbell"),
+       color = map_num_to_col(data[input$ws2_player_select, 'Physicality'])
      )
    })
    output$PlayerTacklingBox <- renderValueBox({
      valueBox(
-       paste0(data[input$ws2_player_select, 'StandingTackle']), "Tackling", icon = icon("shield-halved"),
-       color = map_num_to_col(data[input$ws2_player_select, 'StandingTackle'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Defending']), "Defending", icon = icon("shield-halved"),
+       color = map_num_to_col(data[input$ws2_player_select, 'Defending'])
      )
    })
    
    output$PlayerPassingBox <- renderValueBox({
      valueBox(
-       paste0(data[input$ws2_player_select, 'ShortPassing']), "Passing", icon = icon("futbol"),
-       color = map_num_to_col(data[input$ws2_player_select, 'ShortPassing'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Passing']), "Passing", icon = icon("futbol"),
+       color = map_num_to_col(data[input$ws2_player_select, 'Passing'])
      )
    })
    
    output$PlayerDribblingBox <- renderValueBox({
      valueBox(
-       paste0(data[input$ws2_player_select, 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
        color = map_num_to_col(data[input$ws2_player_select, 'Dribbling'])
      )
    })
@@ -468,7 +331,9 @@ server <- function(input, output, session) {
   output$ribbonplot <- renderPlot({
     plot_player_rating(input$player_progression_name)
   })
+  
 
+    
   # Ulitimate Scouter logic
 
   scouting_dt <- fifa_data_all_years[[6]][c('ID','Name', 'Age', 'Nationality', 'Club', 'Overall', 'Potential', 'Value', 'Wage', 'Preferred Position')]
@@ -519,8 +384,7 @@ server <- function(input, output, session) {
       if (length(s)){
         # Get data
         selected_player <- filtered_dt()[s,]
-
-        stats <- get_ut_stats(selected_player$ID, 2022)
+        stats <- fifa_data_all_years[[6]][fifa_data_all_years[[6]]$ID == selected_player$ID,c('Pace', 'Shooting', 'Passing', 'Dribbling', 'Defending', 'Physicality')]
 
         # plot stats on a lollipop chart
 
