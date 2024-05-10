@@ -35,19 +35,17 @@ plot_player_rating <- function(player_name) {
     if (length(player_data) > 0) {
       player_overalls <- c(player_overalls, player_data$Overall[1])
       player_potentials <- c(player_potentials, player_data$Potential[1])
-    } else {
-      player_overalls <- c(player_overalls, NA)
-      player_potentials <- c(player_potentials, NA)
-    }
+    } 
+    
   }
 
-  data <- data.frame(Year = years, Overall = player_overalls, Potential = player_potentials)
-  
+  data <- data.frame(Year = years, Overall = player_overalls, Potential = player_potentials) %>% na.omit
+
   ggplot(data, aes(x = Year, y = Overall)) +
-    geom_line(aes(y = Overall), color = "blue", size = 1.5) +
+    geom_line(aes(y = Overall), color = "blue", linewidth = 1.5) +
     geom_point(aes(y = Overall), color = "red", size = 3) +
     geom_text(aes(y = Overall, label = Overall), hjust = 0.5, vjust = -1.5, size = 3) +
-    geom_line(aes(y = Potential), color = "blue", size = 1.5) +
+    geom_line(aes(y = Potential), color = "blue", linewidth = 1.5) +
     geom_point(aes(y = Potential), color = "red", size = 3) +
     geom_text(aes(y = Potential, label = Potential), hjust = 0.5, vjust = -1.5, size = 3) +
     geom_ribbon(aes(ymin=Overall,ymax=Potential), fill="blue", alpha=0.2) +
