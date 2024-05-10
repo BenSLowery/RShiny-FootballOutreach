@@ -8,6 +8,7 @@ library(DT)
 library(tidyverse)
 library(forcats)
 library(magick)
+library(rsvg)
 
 # Download image of football field
 
@@ -153,7 +154,7 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
-      menuItem("Individual", tabName = "individual", icon = icon("person")),
+      #menuItem("Individual", tabName = "individual", icon = icon("person")),
       menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
       menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area")),
       menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map"))
@@ -162,44 +163,44 @@ ui <- dashboardPage(
   dashboardBody(
     tabItems(
       # First tab content
-    tabItem(tabName = "individual",
-    # Boxes need to be put in a row (or column)
-    box(width = 12,
-    # inputPanel(
-    #   selectInput("year", "Select a year:", choices = c(2017,2018,2019,2020,2021,2022))
-    # ),
-    ),
-    fluidRow(
-      box(width=12,
-          DT::dataTableOutput("mytable"),
-          tags$br(),
-          tags$br(),
-          #actionButton("clear", "Clear Selection"), 
-      ),
-         
-      box(width=6,
-         selectInput("histogram_col", "Attribute compared to others:",
-                     c("Age" = "Age",
-                       "Overall" = "Overall",
-                       "Acceleration" = "Acceleration",
-                       "Finishing" = "Finishing",
-                       "Short Passing" = "ShortPassing",
-                       "Dribbling" = "Dribbling",
-                       "Standing Tackle" = "StandingTackle",
-                       "Strength" = "Strength",
-                       'Potential' = 'Potential'
-                       )),
-    
-         plotOutput('histogram')
-      ),
-
-     #TODO - Lollipop chart
-     box(width = 6,
-         plotOutput('lollipop')
-     )
-      
-    )
-  ),
+  #   tabItem(tabName = "individual",
+  #   # Boxes need to be put in a row (or column)
+  #   box(width = 12,
+  #   # inputPanel(
+  #   #   selectInput("year", "Select a year:", choices = c(2017,2018,2019,2020,2021,2022))
+  #   # ),
+  #   ),
+  #   fluidRow(
+  #     box(width=12,
+  #         DT::dataTableOutput("mytable"),
+  #         tags$br(),
+  #         tags$br(),
+  #         #actionButton("clear", "Clear Selection"), 
+  #     ),
+  #        
+  #     box(width=6,
+  #        selectInput("histogram_col", "Attribute compared to others:",
+  #                    c("Age" = "Age",
+  #                      "Overall" = "Overall",
+  #                      "Acceleration" = "Acceleration",
+  #                      "Finishing" = "Finishing",
+  #                      "Short Passing" = "ShortPassing",
+  #                      "Dribbling" = "Dribbling",
+  #                      "Standing Tackle" = "StandingTackle",
+  #                      "Strength" = "Strength",
+  #                      'Potential' = 'Potential'
+  #                      )),
+  #   
+  #        plotOutput('histogram')
+  #     ),
+  # 
+  #    #TODO - Lollipop chart
+  #    box(width = 6,
+  #        plotOutput('lollipop')
+  #    )
+  #     
+  #   )
+  # ),
   tabItem(tabName = "comparsion",
           h2("Compare Players from Man City and Benfica"),
           box(width=12,
@@ -256,7 +257,8 @@ ui <- dashboardPage(
   ),
   tabItem(tabName = "PlayerProgression",
           h2("Show player progression over generations"),
-          uiOutput("name"),
+          selectizeInput('player_progression_name', label = NULL, choices = NULL),
+        
           box(width=12,
               plotOutput("ribbonplot")
           )
@@ -329,7 +331,7 @@ ui <- dashboardPage(
 ))
 
 # Server side logic
-server <- function(input, output) {
+server <- function(input, output, session) {
   
     #####
     # Main Player Database logic
@@ -459,18 +461,14 @@ server <- function(input, output) {
 
   # Just remove this and associated UI if I can't figure out how to make it faster in time
 
-  my_list <- reactive({
-    data <- fifa_data_all_years[[1]]$Name
-    my_list <- as.character(data)
 
-  })
-
-  output$name <- renderUI({
-    selectInput(inputId = "name", label = "Name", choices = my_list())
-  })
+  updateSelectizeInput(session, 'player_progression_name', choices = fifa_data_all_years[[1]]$Name, server = TRUE)
+  # output$name <- renderUI({
+  #   selectInput(inputId = "name", label = "Name", choices = my_list())
+  # })
   
   output$ribbonplot <- renderPlot({
-    plot_player_rating(input$name)
+    plot_player_rating(input$player_progression_name)
   })
 
   # Ulitimate Scouter logic
@@ -478,6 +476,7 @@ server <- function(input, output) {
   scouting_dt <- fifa_data_all_years[[6]][c('ID','Name', 'Age', 'Nationality', 'Club', 'Overall', 'Potential', 'Value', 'Wage', 'Preferred Position')]
 
   # This is messy af but I don't want to spend any more time on it :) Gets the correct data based on the filters input by the user
+  
   filtered_dt <- reactive(
     if (input$Nation == 'All') {
       if (input$PreferredPosition == 'All') {
@@ -528,24 +527,24 @@ server <- function(input, output) {
         # plot stats on a lollipop chart
 
         tp <- data.frame(x=names(stats), y=unname(unlist(stats)))
-
-  ggplot(tp, aes(x=x, y=y)) +
-    geom_segment( aes(x=x, xend=x, y=0, yend=y), color="skyblue") +
-    geom_point( color="blue", size=4, alpha=0.6) +
-    geom_text(aes(label=y), hjust=0.5, vjust=-1.5, size=6) +
-    xlab("") +
-    ylab("") +
-    ggtitle("Ultimate Team Stats", ) +
-    theme_light() +
-    coord_flip() +
-    theme(
-      panel.grid.major.y = element_blank(),
-      panel.border = element_blank(),
-      axis.ticks.y = element_blank(),
-      text = element_text(size=20), # Make font size of all elements larger
-      plot.title = element_text(hjust=0.35) # Center the title
-    )
-
+      
+        ggplot(tp, aes(x=x, y=y)) +
+          geom_segment( aes(x=x, xend=x, y=0, yend=y), color="skyblue") +
+          geom_point( color="blue", size=4, alpha=0.6) +
+          geom_text(aes(label=y), hjust=0.5, vjust=-1.5, size=6) +
+          xlab("") +
+          ylab("") +
+          ggtitle("Ultimate Team Stats", ) +
+          theme_light() +
+          coord_flip() +
+          theme(
+            panel.grid.major.y = element_blank(),
+            panel.border = element_blank(),
+            axis.ticks.y = element_blank(),
+            text = element_text(size=20), # Make font size of all elements larger
+            plot.title = element_text(hjust=0.35) # Center the title
+          )
+      
 
 
 
@@ -556,6 +555,7 @@ server <- function(input, output) {
     # Renders players position ratings on the football field
     output$scoutingField = renderPlot({
       s = input$scoutingtable_rows_selected
+      if (length(s)) {
       position_ratings <- get_player_position_ratings(filtered_dt()[s, ]$ID, 2022)
       image_ggplot(img) +
       annotate("text", x = 225, y = 60, size = 10, label=paste("GK\n", as.character(position_ratings['GK']))) +
@@ -573,11 +573,14 @@ server <- function(input, output) {
       annotate("text", x = 75, y = 500, size = 10, label=paste("LW\n", as.character(position_ratings['LW/RW']))) +
       annotate("text", x = 225, y = 620, size = 10, label=paste("ST\n", as.character(position_ratings['ST']))) +
       annotate("text", x = 225, y = 520, size = 10, label=paste("CF\n", as.character(position_ratings['CF']))) 
-    },
+    } else {
+      # If no input is selected just plot the image of the pitch (just makes it look cleaner)
+      image_ggplot(img)
+    }},
     height = 780,
     )
 
-  
+    
 }
 
 # Run the application 
