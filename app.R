@@ -137,11 +137,11 @@ ui <- dashboardPage(
           fluidRow(
             box(width=4,
             selectInput("ws2_player_select", "Select a Player:",
-              c("Erling Haaland" = 252,
-                              "Nicolas Otmamendi" = 2574,
-                              "Jean Michael Seri" = 650,
-                              "Robbie Mckenzie" = 10215,
-                              "Thorgan Hazard" = 306
+              c("Erling Haaland" = 224,
+                              "Nicolas Otmamendi" = 2150,
+                              "Jean Michael Seri" = 560,
+                              "Tom Lowery" = 4937,
+                              "Thorgan Hazard" = 276
               )),
               h3(textOutput("w2s_player_name")),
               p(textOutput("w2s_player_club")),
@@ -271,48 +271,48 @@ server <- function(input, output, session) {
    #####
    # Who to scout logic
    #####
-   output$w2s_player_name <- renderText({paste("Name: ",data[input$ws2_player_select, 'Name'])})
-   output$w2s_player_club <- renderText({paste("Club: ",data[input$ws2_player_select, 'Club'])})
-   output$w2s_player_age <- renderText({paste("Age: ",data[input$ws2_player_select, 'Age'])})
+   output$w2s_player_name <- renderText({paste("Name: ",fifa_data_all_years[[6]][input$ws2_player_select, 'Name'])})
+   output$w2s_player_club <- renderText({paste("Club: ",fifa_data_all_years[[6]][input$ws2_player_select, 'Club'])})
+   output$w2s_player_age <- renderText({paste("Age: ",fifa_data_all_years[[6]][input$ws2_player_select, 'Age'])})
   
    output$PlayerPaceBox <- renderValueBox({
      valueBox(
        paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Pace']), "Speed", icon = icon("person-running"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Pace'])
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Pace'])
      )
    })
    
    output$PlayerShootingBox <- renderValueBox({
      valueBox(
        paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Shooting']), "Shooting", icon = icon("meteor"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Shooting'])
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Shooting'])
      )
    })
    
    output$PlayerStrengthBox <- renderValueBox({
      valueBox(
        paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Physicality']), "Strength", icon = icon("dumbbell"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Physicality'])
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Physicality'])
      )
    })
    output$PlayerTacklingBox <- renderValueBox({
      valueBox(
        paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Defending']), "Defending", icon = icon("shield-halved"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Defending'])
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Defending'])
      )
    })
    
    output$PlayerPassingBox <- renderValueBox({
      valueBox(
        paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Passing']), "Passing", icon = icon("futbol"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Passing'])
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Passing'])
      )
    })
    
    output$PlayerDribblingBox <- renderValueBox({
      valueBox(
        paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
-       color = map_num_to_col(data[input$ws2_player_select, 'Dribbling'])
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Dribbling'])
      )
    })
 
@@ -362,7 +362,7 @@ server <- function(input, output, session) {
       DT::datatable(
       filtered_dt()[c('Name', 'Age', 'Nationality', 'Club', 'Overall', 'Potential', 'Value', 'Wage', 'Preferred Position')],
       options = list(
-      autoWidth = FALSE, scrollX = TRUE, dom='fpt', pageLength = 15),
+      autoWidth = FALSE, scrollX = TRUE, dom='fpt', pageLength = 10, scrollY = '500'),
       selection = list(mode = 'single', selected = 1)
       ) %>% formatCurrency(c('Value', 'Wage'), currency = '€', interval = 3, mark = ',', digits = 0)
     })
