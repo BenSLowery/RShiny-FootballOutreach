@@ -84,11 +84,7 @@ map_num_to_col <- function(num) {
   return(colour)
 }
 
-# Get certain columns of the fifa data
-# data <- readRDS(file="fifa_data.Rda")
-data <- read.csv('data/FIFA22_official_data.csv')
-data <- data[c('Name', 'Age', 'Overall', 'Club', 'Acceleration', 'Finishing', 'ShortPassing', 'Dribbling', 'StandingTackle', 'Strength')]
-
+# Get fifa data
 years <- c(17,18,19,20,21,22)
 fifa_data_all_years <- lapply(years, function(year) {
   read_csv(paste0("data_new/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
@@ -116,7 +112,9 @@ ui <- dashboardPage(
   dashboardBody(
     tabItems(
   
-  tabItem(tabName = "home", h1('Welcome')),
+  tabItem(tabName = "home", 
+          h1('Welcome'),
+          ),
   tabItem(tabName = "comparsion",
           h2("Compare Players from Man City and Benfica"),
           box(width=12,
@@ -124,12 +122,12 @@ ui <- dashboardPage(
               selectInput(
                 "SelectPlayerManCity",
                 label = "Man. City",
-                choices = subset(data, Club=="Manchester City")$Name
+                choices = subset(fifa_data_all_years[[6]], Club=="Manchester City")$Name
               ),
                 selectInput(
                   "SelectPlayerBenfica",
                   label = "Benfica",
-                  choices = subset(data, Club=="SL Benfica")$Name
+                  choices = subset(fifa_data_all_years[[6]], Club=="SL Benfica")$Name
                 ),
 
             ),
@@ -190,10 +188,10 @@ ui <- dashboardPage(
         # These are sliders which narrow down the search for a player, more can easily be added in the future but these will do for now. QoL in the future would be to move search from top right of table to here
         box(width=4,
           sliderInput("Age", "Age:", min = 16, max = 54, step = 1, value = c(16, 54)),
-          sliderInput("Value", "Value:", min = 0, max = 200000000, step = 1000000, value = c(0, 200000000), pre = "€"),
-          sliderInput("Wage", "Wage:", min = 0, max = 1000000, step = 10000, value = c(0, 1000000), pre = "€"),
-          sliderInput("Overall", "Overall:", min = 0, max = 100, step = 1, value = c(0, 100)),
-          sliderInput("Potential", "Potential:", min = 0, max = 100, step = 1, value = c(0, 100)),
+          sliderInput("Value", "Value:", min = 0, max = max(fifa_data_all_years[[6]]$Value), step = 1000000, value = c(0, max(fifa_data_all_years[[6]]$Value)), pre = "€"),
+          sliderInput("Wage", "Wage:", min = 0, max = max(fifa_data_all_years[[6]]$Wage), step = 10000, value = c(0, max(fifa_data_all_years[[6]]$Wage)), pre = "€"),
+          sliderInput("Overall", "Overall:", min = 0, max = max(fifa_data_all_years[[6]]$Overall), step = 1, value = c(0, max(fifa_data_all_years[[6]]$Overall))),
+          sliderInput("Potential", "Potential:", min = 0, max = max(fifa_data_all_years[[6]]$Potential), step = 1, value = c(0, max(fifa_data_all_years[[6]]$Potential))),
           selectizeInput("Nation", "Nation:", choices = c('All', unique(fifa_data_all_years[[6]]$Nationality)), multiple = FALSE, selected = 'All'),
           selectizeInput("PreferredPosition", "Preferred Position:", choices = c('All', unique(fifa_data_all_years[[6]]$`Preferred Position`)), multiple = FALSE, selected = 'All')
           ),
@@ -207,13 +205,13 @@ ui <- dashboardPage(
         selectInput("histogram_col", "Attribute compared to others:",
                      c("Age" = "Age",
                        "Overall" = "Overall",
+                       'Potential' = 'Potential',
                        "Pace" = "Pace",
                        "Shooting" = "Shooting",
                        "Passing" = "Passing",
                        "Dribbling" = "Dribbling",
                        "Defending" = "Defending",
-                       "Physicality" = "Physicality",
-                       'Potential' = 'Potential'
+                       "Physicality" = "Physicality"
                        )),
         plotOutput('scoutinghistogram')
         # Add Table in at the top of the page so that if two players have the same name, we can select the correct one
@@ -248,14 +246,22 @@ ui <- dashboardPage(
 
 # Server side logic
 server <- function(input, output, session) {
+  
+  
+    #### 
+    # Welcome page logic
+    ####
+    
+  
     #####
     # Player scouting logic
     #####
     output$PlayerComparison <- DT::renderDataTable({ 
       
       # Transpose the data frame, make column names the new row names and display
-      player_comps_temp <- subset(data, (Name==input$SelectPlayerManCity & Club=='Manchester City') | (Name==input$SelectPlayerBenfica & Club=='SL Benfica')) 
+      player_comps_temp <- subset(fifa_data_all_years[[6]], (Name==input$SelectPlayerManCity & Club=='Manchester City') | (Name==input$SelectPlayerBenfica & Club=='SL Benfica'))
       player_comps_temp <- player_comps_temp[order(player_comps_temp$Club),]
+      player_comps_temp <- player_comps_temp[c('Name', 'Club', 'Pace', 'Shooting', 'Passing', 'Dribbling', 'Defending', 'Physicality')]
       player_comps <- t(player_comps_temp[ , !(names(player_comps_temp) %in% c("Name", "Club"))]) # Transpose so we can look by column
       colnames(player_comps) <- player_comps_temp$Name # Make the name the head of the column
       # Display comparison as a data table and make the highest stat bold for each row
@@ -389,12 +395,13 @@ server <- function(input, output, session) {
         # Get data
         selected_player <- filtered_dt()[s,]
         stats <- fifa_data_all_years[[6]][fifa_data_all_years[[6]]$ID == selected_player$ID,c('Pace', 'Shooting', 'Passing', 'Dribbling', 'Defending', 'Physicality')]
-
+        stats_order <- c(6,5,4,3,2,1) # Ensure the order is preserved from the columns we select
         # plot stats on a lollipop chart
 
         tp <- data.frame(x=names(stats), y=unname(unlist(stats)))
-      
-        ggplot(tp, aes(x=x, y=y)) +
+        tp %>% arrange(stats_order) %>%
+        mutate(x = factor(x, unique(x))) %>%
+        ggplot(aes(x=x, y=y)) +
           geom_segment( aes(x=x, xend=x, y=0, yend=y), color="skyblue") +
           geom_point( color="blue", size=4, alpha=0.6) +
           geom_text(aes(label=y), hjust=0.5, vjust=-1.5, size=6) +
@@ -410,11 +417,6 @@ server <- function(input, output, session) {
             text = element_text(size=20), # Make font size of all elements larger
             plot.title = element_text(hjust=0.35) # Center the title
           )
-      
-
-
-
-
       }
     })
 
