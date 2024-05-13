@@ -13,7 +13,11 @@ library(rsvg)
 # Download image of football field
 
 url <- 'https://upload.wikimedia.org/wikipedia/commons/8/82/Soccer_Field_Transparant.svg'
-download.file(url, destfile = 'soccer_field.svg')
+
+if (!file.exists("soccer_field.svg")) {
+  download.file(url, destfile = 'soccer_field.svg')
+}
+
 img <- image_read_svg('soccer_field.svg')
 
 # General Functions
