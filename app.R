@@ -92,7 +92,7 @@ fifa_data_all_years <- lapply(years, function(year) {
 
 
 value_table <- read_csv('data/value_table.csv', show_col_types = FALSE) %>% 
-  tibble::column_to_rownames('Stat')
+tibble::column_to_rownames('Stat')
 
 
 
@@ -105,8 +105,8 @@ ui <- dashboardPage(
       menuItem("Home", tabName='home', icon=icon('house')),
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
       menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
-      menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area")),
-      menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map"))
+      menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map")),
+      menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area"))
     )
   ),
   dashboardBody(
@@ -171,8 +171,6 @@ ui <- dashboardPage(
   ),
   tabItem(tabName = "PlayerProgression",
           h2("Show player progression over generations"),
-          selectizeInput('player_progression_name', label = NULL, choices = NULL),
-        
           box(width=12,
               plotOutput("ribbonplot")
           )
@@ -333,13 +331,16 @@ server <- function(input, output, session) {
   # Just remove this and associated UI if I can't figure out how to make it faster in time
 
 
-  updateSelectizeInput(session, 'player_progression_name', choices = fifa_data_all_years[[1]]$Name, server = TRUE)
+  #updateSelectizeInput(session, 'player_progression_name', choices = fifa_data_all_years[[1]]$Name, server = TRUE)
   # output$name <- renderUI({
   #   selectInput(inputId = "name", label = "Name", choices = my_list())
   # })
   
+   # Change the player progression player plot to have the player selected in the previous table
   output$ribbonplot <- renderPlot({
-    plot_player_rating(input$player_progression_name)
+    if (length(input$scoutingtable_rows_selected)) {
+      plot_player_rating(filtered_dt()[input$scoutingtable_rows_selected,]$Name)
+    }
   })
   
 
