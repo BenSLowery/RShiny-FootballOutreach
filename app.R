@@ -104,7 +104,15 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Home", tabName='home', icon=icon('house')),
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
-      menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
+      #menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
+      menuItem("Who to sign?" , tabname = "", icon = icon("magnifying-glass"),
+               startExpanded = FALSE,
+               menuSubItem("Man. City",
+                           tabName = "w2s_man_city", icon=icon('ship')),
+                menuSubItem("morecambe",
+                           tabName = "w2s_morecambe", icon=icon('shrimp')),
+                menuSubItem("Benfica",
+                            tabName = "w2s_benfica", icon=icon('crow'))),
       menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map")),
       menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area"))
     )
@@ -134,40 +142,120 @@ ui <- dashboardPage(
             DT::dataTableOutput('PlayerComparison')
           )
   ),
-  tabItem(tabName = "w2s",
-          h2("Given a position, we then give a list of players, and see who's best"),
+  tabItem(tabName = "w2s_man_city",
+          h2("Brief:"),
+          p("You're a scout for Manchester City, who need to sign a star striker for the upcoming season. The club want a player with the following stats"),
+          fluidRow(
+            box(width=12,
+                h2("What we're looking for: A Striker"),
+                valueBox("Shooting", "Excellent at Finishing", icon = icon("meteor"),color='green'),
+                valueBox("Pace", "Quick and agile", icon = icon("person-running"),color='green'),
+                valueBox("Strength", "Tall and Strong", icon = icon("dumbbell"),color='green')
+            )
+          ),
+          p("Who, out of the players below, is the best fit?"),
           fluidRow(
             box(width=4,
-            selectInput("ws2_player_select", "Select a Player:",
+            selectInput("ws2_player_select_man_city", "Select a Player:",
               c("Erling Haaland" = 224,
                               "Nicolas Otmamendi" = 2150,
                               "Jean Michael Seri" = 560,
                               "Tom Lowery" = 4937,
                               "Thorgan Hazard" = 276
               )),
-              h3(textOutput("w2s_player_name")),
-              p(textOutput("w2s_player_club")),
-              p(textOutput("w2s_player_age"))
+              h3(textOutput("w2s_player_name_man_city")),
+              p(textOutput("w2s_player_club_man_city")),
+              p(textOutput("w2s_player_age_man_city"))
             ),
             box(width=8,
             # A static valueBox
-            valueBoxOutput("PlayerPaceBox"),
-            valueBoxOutput("PlayerShootingBox"),
-            valueBoxOutput("PlayerStrengthBox"),
-            valueBoxOutput("PlayerPassingBox"),
-            valueBoxOutput("PlayerDribblingBox"),
-            valueBoxOutput("PlayerTacklingBox")
-            )
-          ),
-          fluidRow(
-            box(width=12,
-              h2("What we're looking for: A Striker"),
-              valueBox("Finishing", "Good at Shooting", icon = icon("meteor"),color='green'),
-              valueBox("Pace", "Quick and agile", icon = icon("person-running"),color='green'),
-              valueBox("Strength", "Tall and Strong", icon = icon("dumbbell"),color='green')
+            valueBoxOutput("PlayerPaceBox_man_city"),
+            valueBoxOutput("PlayerShootingBox_man_city"),
+            valueBoxOutput("PlayerStrengthBox_man_city"),
+            valueBoxOutput("PlayerPassingBox_man_city"),
+            valueBoxOutput("PlayerDribblingBox_man_city"),
+            valueBoxOutput("PlayerTacklingBox_man_city")
             )
           )
 
+  ),
+  tabItem(tabName = "w2s_morecambe",
+          h2("Brief:"),
+          p("You're a scout for morecambe, who need to sign an experienced defender to help them push for promotion."),
+          
+          fluidRow(
+            box(width=12,
+                h2("What we're looking for: A Defender"),
+                valueBox("Age", "Older than 28 with an experinced head", icon = icon("brain"),color='green'),
+                valueBox("Defending", "Crunching tackles", icon = icon("shield-halved"),color='yellow'),
+                valueBox("Strength", "A rock at the back", icon = icon("dumbbell"),color='green')
+            )
+          ),
+          p("Which player fits the best? Remember we want an older player!"),
+          
+          fluidRow(
+            box(width=4,
+                selectInput("ws2_player_select_morecambe", "Select a Player:",
+                            c( "Mark Marshall" = 4965,
+                              "Joe Taylor" = 6857,
+                              "Jair Amador" =  9720,
+                              "Joe Bell" = 3282,
+                              "Aynsley Pears" = 13458
+                            )),
+                h3(textOutput("w2s_player_name_morecambe")),
+                p(textOutput("w2s_player_club_morecambe")),
+                p(textOutput("w2s_player_age_morecambe"))
+            ),
+            box(width=8,
+                # A static valueBox
+                valueBoxOutput("PlayerPaceBox_morecambe"),
+                valueBoxOutput("PlayerShootingBox_morecambe"),
+                valueBoxOutput("PlayerStrengthBox_morecambe"),
+                valueBoxOutput("PlayerPassingBox_morecambe"),
+                valueBoxOutput("PlayerDribblingBox_morecambe"),
+                valueBoxOutput("PlayerTacklingBox_morecambe")
+            )
+          )
+          
+  ),
+  tabItem(tabName = "w2s_benfica",
+          h2("Brief:"),
+          p("You're a scout for Benfica, who need to sign a tricky winger from the region to tear down opposition defences."),
+          fluidRow(
+            box(width=12,
+                h2("What we're looking for: A Striker"),
+                valueBox("Dribbling", "Tricky with his feet", icon = icon("wand-magic-sparkles"),color='green'),
+                valueBox("Pace", "Quick and agile", icon = icon("person-running"),color='green'),
+                valueBox("Local Hero", "From Spain or Portugal", icon = icon("earth-europe"),color='green')
+            )
+          ),
+          p("Which player fits the best? Keep an eye out for which country they are from!"),
+          fluidRow(
+            box(width=4,
+                selectInput("ws2_player_select_benfica", "Select a Player:",
+                            c("A. Wildig" = 4376  ,
+                              "H. Mkhitaryan" = 116 ,
+                              "Z. Bailey" = 10232,
+                              "João Mário" = 2652,
+                              "Samu Castillejo" = 1860
+                            )),
+                h3(textOutput("w2s_player_name_benfica")),
+                p(textOutput("w2s_player_club_benfica")),
+                p(textOutput("w2s_player_age_benfica")),
+                p(textOutput("w2s_player_nation_benfica"))
+            ),
+            box(width=8,
+                # A static valueBox
+                valueBoxOutput("PlayerPaceBox_benfica"),
+                valueBoxOutput("PlayerShootingBox_benfica"),
+                valueBoxOutput("PlayerStrengthBox_benfica"),
+                valueBoxOutput("PlayerPassingBox_benfica"),
+                valueBoxOutput("PlayerDribblingBox_benfica"),
+                valueBoxOutput("PlayerTacklingBox_benfica")
+            )
+          )
+
+          
   ),
   tabItem(tabName = "PlayerProgression",
           h2("Show player progression over generations"),
@@ -279,48 +367,140 @@ server <- function(input, output, session) {
    #####
    # Who to scout logic
    #####
-   output$w2s_player_name <- renderText({paste("Name: ",fifa_data_all_years[[6]][input$ws2_player_select, 'Name'])})
-   output$w2s_player_club <- renderText({paste("Club: ",fifa_data_all_years[[6]][input$ws2_player_select, 'Club'])})
-   output$w2s_player_age <- renderText({paste("Age: ",fifa_data_all_years[[6]][input$ws2_player_select, 'Age'])})
+   output$w2s_player_name_man_city <- renderText({paste("Name: ",fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Name'])})
+   output$w2s_player_club_man_city <- renderText({paste("Club: ",fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Club'])})
+   output$w2s_player_age_man_city <- renderText({paste("Age: ",fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Age'])})
   
-   output$PlayerPaceBox <- renderValueBox({
+   output$PlayerPaceBox_man_city <- renderValueBox({
      valueBox(
-       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Pace']), "Speed", icon = icon("person-running"),
-       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Pace'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Pace']), "Speed", icon = icon("person-running"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Pace'])
      )
    })
    
-   output$PlayerShootingBox <- renderValueBox({
+   output$PlayerShootingBox_man_city <- renderValueBox({
      valueBox(
-       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Shooting']), "Shooting", icon = icon("meteor"),
-       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Shooting'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Shooting']), "Shooting", icon = icon("meteor"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Shooting'])
      )
    })
    
-   output$PlayerStrengthBox <- renderValueBox({
+   output$PlayerStrengthBox_man_city <- renderValueBox({
      valueBox(
-       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Physicality']), "Strength", icon = icon("dumbbell"),
-       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Physicality'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Physicality']), "Strength", icon = icon("dumbbell"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Physicality'])
      )
    })
-   output$PlayerTacklingBox <- renderValueBox({
+   output$PlayerTacklingBox_man_city <- renderValueBox({
      valueBox(
-       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Defending']), "Defending", icon = icon("shield-halved"),
-       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Defending'])
-     )
-   })
-   
-   output$PlayerPassingBox <- renderValueBox({
-     valueBox(
-       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Passing']), "Passing", icon = icon("futbol"),
-       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Passing'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Defending']), "Defending", icon = icon("shield-halved"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Defending'])
      )
    })
    
-   output$PlayerDribblingBox <- renderValueBox({
+   output$PlayerPassingBox_man_city <- renderValueBox({
      valueBox(
-       paste0(fifa_data_all_years[[6]][input$ws2_player_select, 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
-       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select, 'Dribbling'])
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Passing']), "Passing", icon = icon("futbol"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Passing'])
+     )
+   })
+   
+   output$PlayerDribblingBox_man_city <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_man_city, 'Dribbling'])
+     )
+   })
+   
+   output$w2s_player_name_morecambe <- renderText({paste("Name: ",fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Name'])})
+   output$w2s_player_club_morecambe  <- renderText({paste("Club: ",fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Club'])})
+   output$w2s_player_age_morecambe  <- renderText({paste("Age: ",fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Age'])})
+   
+   output$PlayerPaceBox_morecambe  <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Pace']), "Speed", icon = icon("person-running"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Pace'])
+     )
+   })
+   
+   output$PlayerShootingBox_morecambe <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Shooting']), "Shooting", icon = icon("meteor"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Shooting'])
+     )
+   })
+   
+   output$PlayerStrengthBox_morecambe  <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Physicality']), "Strength", icon = icon("dumbbell"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Physicality'])
+     )
+   })
+   output$PlayerTacklingBox_morecambe  <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Defending']), "Defending", icon = icon("shield-halved"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Defending'])
+     )
+   })
+   
+   output$PlayerPassingBox_morecambe <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Passing']), "Passing", icon = icon("futbol"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Passing'])
+     )
+   })
+   
+   output$PlayerDribblingBox_morecambe <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_morecambe , 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_morecambe, 'Dribbling'])
+     )
+   })
+   
+   output$w2s_player_name_benfica <- renderText({paste("Name: ",fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Name'])})
+   output$w2s_player_club_benfica <- renderText({paste("Club: ",fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Club'])})
+   output$w2s_player_age_benfica <- renderText({paste("Age: ",fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Age'])})
+   output$w2s_player_nation_benfica <- renderText({paste("Nation :",fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Nationality'])})
+   
+   
+   output$PlayerPaceBox_benfica <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Pace']), "Speed", icon = icon("person-running"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Pace'])
+     )
+   })
+   
+   output$PlayerShootingBox_benfica <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Shooting']), "Shooting", icon = icon("meteor"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Shooting'])
+     )
+   })
+   
+   output$PlayerStrengthBox_benfica <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Physicality']), "Strength", icon = icon("dumbbell"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Physicality'])
+     )
+   })
+   output$PlayerTacklingBox_benfica <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Defending']), "Defending", icon = icon("shield-halved"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Defending'])
+     )
+   })
+   
+   output$PlayerPassingBox_benfica <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Passing']), "Passing", icon = icon("futbol"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Passing'])
+     )
+   })
+   
+   output$PlayerDribblingBox_benfica <- renderValueBox({
+     valueBox(
+       paste0(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Dribbling']), "Dribbling", icon = icon("wand-magic-sparkles"),
+       color = map_num_to_col(fifa_data_all_years[[6]][input$ws2_player_select_benfica, 'Dribbling'])
      )
    })
 
@@ -448,7 +628,10 @@ server <- function(input, output, session) {
     }},
     height = 780,
     )
-
+    
+    session$onSessionEnded(function() {
+      stopApp()
+    })
     
 }
 
