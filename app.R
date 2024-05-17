@@ -87,7 +87,7 @@ map_num_to_col <- function(num) {
 # Get fifa data
 years <- c(17,18,19,20,21,22)
 fifa_data_all_years <- lapply(years, function(year) {
-  read_csv(paste0("data_new/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
+  read_csv(paste0("data/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
 })
 
 
