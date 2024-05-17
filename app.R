@@ -104,7 +104,6 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Home", tabName='home', icon=icon('house')),
       menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
-      #menuItem("Who to sign?", tabName = "w2s", icon = icon("magnifying-glass")),
       menuItem("Who to sign?" , tabname = "", icon = icon("magnifying-glass"),
                startExpanded = FALSE,
                menuSubItem("Man. City",
@@ -122,6 +121,7 @@ ui <- dashboardPage(
   
   tabItem(tabName = "home", 
           h1('Welcome'),
+          actionLink("link_to_tabpanel_a", "Link to panel A")
           ),
   tabItem(tabName = "comparsion",
           h2("Compare Players from Man City and Benfica"),
@@ -632,7 +632,6 @@ server <- function(input, output, session) {
     session$onSessionEnded(function() {
       stopApp()
     })
-    
 }
 
 # Run the application 
