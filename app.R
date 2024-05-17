@@ -10,7 +10,7 @@ library(shinydashboard)
 library(DT)
 library(tidyverse)
 library(forcats)
-library(magick)
+#library(magick)
 
 
 # Download image of football field
@@ -21,7 +21,7 @@ if (!file.exists("soccer_field.svg")) {
   download.file(url, destfile = 'soccer_field.svg')
 }
 
-img <- image_read_svg('soccer_field.svg')
+#img <- image_read_svg('soccer_field.svg')
 
 # General Functions
 highlight <- function(x, value, col.value, col=NA, ...){
@@ -605,32 +605,32 @@ server <- function(input, output, session) {
     })
 
     # Renders players position ratings on the football field
-    output$scoutingField = renderPlot({
-      s = input$scoutingtable_rows_selected
-      if (length(s)) {
-      position_ratings <- get_player_position_ratings(filtered_dt()[s, ]$ID, 2022)
-      image_ggplot(img) +
-      annotate("text", x = 225, y = 60, size = 10, label=paste("GK\n", as.character(position_ratings['GK']))) +
-      annotate("text", x = 225, y = 145, size = 10, label=paste("CB\n", as.character(position_ratings['CB']))) +
-      annotate("text", x = 375, y = 180, size = 10, label=paste("RB\n", as.character(position_ratings['LB/RB']))) +
-      annotate("text", x = 75, y = 180, size = 10, label=paste("LB\n", as.character(position_ratings['LB/RB']))) +
-      annotate("text", x = 75, y = 280, size = 10, label=paste("LWB\n", as.character(position_ratings['LWB/RWB']))) +
-      annotate("text", x = 375, y = 280, size = 10, label=paste("RWB\n", as.character(position_ratings['LWB/RWB']))) +
-      annotate("text", x = 225, y = 250, size = 10, label=paste("CDM\n", as.character(position_ratings['CDM']))) +
-      annotate("text", x = 225, y = 340, size = 10, label=paste("CM\n", as.character(position_ratings['CM']))) +
-      annotate("text", x = 225, y = 420, size = 10, label=paste("CAM\n", as.character(position_ratings['CAM']))) +
-      annotate("text", x = 375, y = 380, size = 10, label=paste("RM\n", as.character(position_ratings['LM/RM']))) +
-      annotate("text", x = 75, y = 380, size = 10, label=paste("LM\n", as.character(position_ratings['LM/RM']))) +
-      annotate("text", x = 375, y = 500, size = 10, label=paste("RW\n", as.character(position_ratings['LW/RW']))) + 
-      annotate("text", x = 75, y = 500, size = 10, label=paste("LW\n", as.character(position_ratings['LW/RW']))) +
-      annotate("text", x = 225, y = 620, size = 10, label=paste("ST\n", as.character(position_ratings['ST']))) +
-      annotate("text", x = 225, y = 520, size = 10, label=paste("CF\n", as.character(position_ratings['CF']))) 
-    } else {
-      # If no input is selected just plot the image of the pitch (just makes it look cleaner)
-      image_ggplot(img)
-    }},
-    height = 780,
-    )
+    # output$scoutingField = renderPlot({
+    #   s = input$scoutingtable_rows_selected
+    #   if (length(s)) {
+    #   position_ratings <- get_player_position_ratings(filtered_dt()[s, ]$ID, 2022)
+    #   image_ggplot(img) +
+    #   annotate("text", x = 225, y = 60, size = 10, label=paste("GK\n", as.character(position_ratings['GK']))) +
+    #   annotate("text", x = 225, y = 145, size = 10, label=paste("CB\n", as.character(position_ratings['CB']))) +
+    #   annotate("text", x = 375, y = 180, size = 10, label=paste("RB\n", as.character(position_ratings['LB/RB']))) +
+    #   annotate("text", x = 75, y = 180, size = 10, label=paste("LB\n", as.character(position_ratings['LB/RB']))) +
+    #   annotate("text", x = 75, y = 280, size = 10, label=paste("LWB\n", as.character(position_ratings['LWB/RWB']))) +
+    #   annotate("text", x = 375, y = 280, size = 10, label=paste("RWB\n", as.character(position_ratings['LWB/RWB']))) +
+    #   annotate("text", x = 225, y = 250, size = 10, label=paste("CDM\n", as.character(position_ratings['CDM']))) +
+    #   annotate("text", x = 225, y = 340, size = 10, label=paste("CM\n", as.character(position_ratings['CM']))) +
+    #   annotate("text", x = 225, y = 420, size = 10, label=paste("CAM\n", as.character(position_ratings['CAM']))) +
+    #   annotate("text", x = 375, y = 380, size = 10, label=paste("RM\n", as.character(position_ratings['LM/RM']))) +
+    #   annotate("text", x = 75, y = 380, size = 10, label=paste("LM\n", as.character(position_ratings['LM/RM']))) +
+    #   annotate("text", x = 375, y = 500, size = 10, label=paste("RW\n", as.character(position_ratings['LW/RW']))) + 
+    #   annotate("text", x = 75, y = 500, size = 10, label=paste("LW\n", as.character(position_ratings['LW/RW']))) +
+    #   annotate("text", x = 225, y = 620, size = 10, label=paste("ST\n", as.character(position_ratings['ST']))) +
+    #   annotate("text", x = 225, y = 520, size = 10, label=paste("CF\n", as.character(position_ratings['CF']))) 
+    # } else {
+    #   # If no input is selected just plot the image of the pitch (just makes it look cleaner)
+    #   #image_ggplot(img)
+    # }},
+    # height = 780,
+    # )
     
     session$onSessionEnded(function() {
       stopApp()
