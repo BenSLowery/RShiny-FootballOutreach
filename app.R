@@ -1,5 +1,8 @@
 #
 # This is a Shiny web application. 
+# Authors: 
+# Ben Lowery
+# Jack Trainer
 #
 
 library(shiny)
@@ -8,7 +11,7 @@ library(DT)
 library(tidyverse)
 library(forcats)
 library(magick)
-library(rsvg)
+
 
 # Download image of football field
 
@@ -108,7 +111,7 @@ ui <- dashboardPage(
                startExpanded = FALSE,
                menuSubItem("Man. City",
                            tabName = "w2s_man_city", icon=icon('ship')),
-                menuSubItem("morecambe",
+                menuSubItem("Morecambe",
                            tabName = "w2s_morecambe", icon=icon('shrimp')),
                 menuSubItem("Benfica",
                             tabName = "w2s_benfica", icon=icon('crow'))),
@@ -181,7 +184,7 @@ ui <- dashboardPage(
   ),
   tabItem(tabName = "w2s_morecambe",
           h2("Brief:"),
-          p("You're a scout for morecambe, who need to sign an experienced defender to help them push for promotion."),
+          p("You're a scout for Morecambe, who need to sign an experienced defender to help them push for promotion."),
           
           fluidRow(
             box(width=12,
@@ -223,7 +226,7 @@ ui <- dashboardPage(
           p("You're a scout for Benfica, who need to sign a tricky winger from the region to tear down opposition defences."),
           fluidRow(
             box(width=12,
-                h2("What we're looking for: A Striker"),
+                h2("What we're looking for: A Winger"),
                 valueBox("Dribbling", "Tricky with his feet", icon = icon("wand-magic-sparkles"),color='green'),
                 valueBox("Pace", "Quick and agile", icon = icon("person-running"),color='green'),
                 valueBox("Local Hero", "From Spain or Portugal", icon = icon("earth-europe"),color='green')
