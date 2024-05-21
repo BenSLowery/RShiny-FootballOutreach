@@ -11,6 +11,7 @@ library(DT)
 library(tidyverse)
 library(forcats)
 library(magick)
+library(rsvg)
 
 
 # Download image of football field
