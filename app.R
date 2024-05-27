@@ -18,11 +18,11 @@ library(rsvg)
 
 url <- 'https://upload.wikimedia.org/wikipedia/commons/8/82/Soccer_Field_Transparant.svg'
 
-if (!file.exists("soccer_field.svg")) {
-  download.file(url, destfile = 'soccer_field.svg')
+if (!file.exists("assets/soccer_field.svg")) {
+  download.file(url, destfile = 'assets/soccer_field.svg')
 }
 
-img <- image_read_svg('soccer_field.svg')
+img <- image_read_svg('assets/soccer_field.svg')
 
 # General Functions
 highlight <- function(x, value, col.value, col=NA, ...){
