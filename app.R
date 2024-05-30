@@ -107,7 +107,7 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName='home', icon=icon('house')),
-      menuItem("Comparsion", tabName = "comparsion", icon = icon("people-group")),
+      
       menuItem("Who to sign?" , tabname = "", icon = icon("magnifying-glass"),
                startExpanded = FALSE,
                menuSubItem("Man. City",
@@ -118,8 +118,9 @@ ui <- dashboardPage(
                             tabName = "w2s_benfica", icon=icon('crow'))),
       menuItem('Ultimate Scouter', tabname = "", icon = icon("map"), 
                startExpanded = TRUE, 
-               menuSubItem("Player Analysis", tabName = "scouter", icon=icon("user")),
-               menuSubItem("Player Progression", tabName = "PlayerProgression", icon=icon("chart-area"))
+               menuSubItem("Player Analysis", tabName = "scouter", icon=icon("user-secret")),
+               menuSubItem("Player Progression", tabName = "PlayerProgression", icon=icon("chart-area")),
+               menuSubItem("Comparsion", tabName = "comparsion", icon = icon("people-group"))
               )
     )
   ),
@@ -130,7 +131,7 @@ ui <- dashboardPage(
           h1('Welcome'),
           actionLink("link_to_tabpanel_a", "Link to panel A")
           ),
-  tabItem(tabName = "comparsion",
+  tabItem(tabName = "comparsion_old",
           h2("Compare Players from Man City and Benfica"),
           box(width=12,
             inputPanel(
@@ -147,6 +148,25 @@ ui <- dashboardPage(
 
             ),
             DT::dataTableOutput('PlayerComparison')
+          )
+  ),
+  tabItem(tabName = "comparsion",
+          h2("Compare Player to either Manchester City, Benfica or Morecambe players."),
+          box(width=12,
+              inputPanel(
+                selectInput(
+                  "SelectClub",
+                  label = "Club",
+                  choices = c('Manchester City', "SL Benfica", "Morecambe")
+                ),
+                selectInput(
+                  "SelectPlayer",
+                  label = "Player",
+                  choices = c()
+                ),
+                
+              ),
+              DT::dataTableOutput('PlayerComparison')
           )
   ),
   tabItem(tabName = "w2s_man_city",
@@ -347,12 +367,23 @@ server <- function(input, output, session) {
     
   
     #####
-    # Player scouting logic
+    # Player comparison logic
     #####
+    observeEvent(input$SelectClub, {
+      
+      #Filter countries based on current continent selection
+      playersToShow = subset(fifa_data_all_years[[6]], Club==input$SelectClub)$Name
+      
+      #Update the actual input
+      updateSelectInput(session, "SelectPlayer", choices = playersToShow, 
+                        selected = playersToShow[1])
+      
+    })
     output$PlayerComparison <- DT::renderDataTable({ 
       
       # Transpose the data frame, make column names the new row names and display
-      player_comps_temp <- subset(fifa_data_all_years[[6]], (Name==input$SelectPlayerManCity & Club=='Manchester City') | (Name==input$SelectPlayerBenfica & Club=='SL Benfica'))
+      if (length(input$scoutingtable_rows_selected))  {
+      player_comps_temp <- rbind(subset(fifa_data_all_years[[6]], (ID==filtered_dt()[input$scoutingtable_rows_selected,]$ID)), subset(fifa_data_all_years[[6]], (Name==input$SelectPlayer & Club==input$SelectClub)))
       player_comps_temp <- player_comps_temp[order(player_comps_temp$Club),]
       player_comps_temp <- player_comps_temp[c('Name', 'Club', 'Pace', 'Shooting', 'Passing', 'Dribbling', 'Defending', 'Physicality')]
       player_comps <- t(player_comps_temp[ , !(names(player_comps_temp) %in% c("Name", "Club"))]) # Transpose so we can look by column
@@ -369,7 +400,8 @@ server <- function(input, output, session) {
       }
     }
   }'))) 
-    })
+    }
+      })
     
    #####
    # Who to scout logic
