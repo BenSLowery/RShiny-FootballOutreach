@@ -116,8 +116,11 @@ ui <- dashboardPage(
                            tabName = "w2s_morecambe", icon=icon('shrimp')),
                 menuSubItem("Benfica",
                             tabName = "w2s_benfica", icon=icon('crow'))),
-      menuItem("Ultimate Scouter", tabName = "scouter", icon = icon("map")),
-      menuItem("Progression", tabName = "PlayerProgression", icon = icon("chart-area"))
+      menuItem('Ultimate Scouter', tabname = "", icon = icon("map"), 
+               startExpanded = TRUE, 
+               menuSubItem("Player Analysis", tabName = "scouter", icon=icon("user")),
+               menuSubItem("Player Progression", tabName = "PlayerProgression", icon=icon("chart-area"))
+              )
     )
   ),
   dashboardBody(
