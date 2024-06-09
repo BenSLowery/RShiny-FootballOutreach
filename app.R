@@ -125,12 +125,19 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
-    tabItems(
+    
+  tabItems(
   
   tabItem(tabName = "home", 
-          h1('Welcome'),
-          actionLink("link_to_tabpanel_a", "Link to panel A")
+          fluidRow(
+            tabBox(width=12,
+              id = "HomeTabs",
+              tabPanel("Welcome", icon=icon('house'),"[Insert information introducing students to the app]"),
+              tabPanel("Tasks", icon=icon('rectangle-list'), "[Give a list of tasks for students to complete]")
+            ),
           ),
+          ),
+  
   tabItem(tabName = "comparsion_old",
           h2("Compare Players from Man City and Benfica"),
           box(width=12,
