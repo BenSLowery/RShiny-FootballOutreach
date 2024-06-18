@@ -94,6 +94,10 @@ fifa_data_all_years <- lapply(years, function(year) {
   read_csv(paste0("data/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
 })
 
+# Add the school data
+new_row<-list("Index"=13644,"ID"=0,"Name"="[SCHOOL NAME]","Age"=11,"Nationality"="England","Overall"=91, "Potential"=99,"Club"="Morecambe F.C.",  "Value"=100000000,   "Wage"=350000,    "Special"=0, "Preferred Foot"="Right", "International Reputation"=5,"Weak Foot"=3,       "Skill Moves"=5,     "Work Rate"="High/High",      "Body Type"="Unique",       "Height"="179cm",  "Weight"="69kg",  "Crossing"=90,       "Finishing"=90,       "HeadingAccuracy"=90, "ShortPassing"=89,    "Volleys"=90,"Dribbling"=94,       "Curve"=90,  "FKAccuracy"=90,      "LongPassing"=82,    "BallControl"=82,     "Acceleration"=93,    "SprintSpeed"=97,     "Agility"=97,        "Reactions"=88,       "Balance"=90,"ShotPower"=90,       "Jumping"=90,        "Stamina"=90,"Strength"=85,        "LongShots"=90,       "Aggression"=90,     "Interceptions"=90,   "Positioning"=93,     "Vision"=90, "Penalties"=90,      "Composure"=91,       "Marking"=93,"StandingTackle"=90,  "SlidingTackle"=90,  "GKDiving"=10,        "GKHandling"=10,      "GKKicking"=10,       "GKPositioning"=10,  "GKReflexes"=10,      "Preferred Position"=10,   "Best Overall Rating"=91,   "Pace"=95,  "Shooting"=91,        "Passing"=90,"Defending"=91,       "Physicality"=89)   
+fifa_data_all_years[[6]] <- rbind(fifa_data_all_years[[6]], new_row)
+
 
 value_table <- read_csv('data/value_table.csv', show_col_types = FALSE) %>% 
 tibble::column_to_rownames('Stat')
@@ -307,7 +311,7 @@ ui <- dashboardPage(
         tags$br(),
         # These are sliders which narrow down the search for a player, more can easily be added in the future but these will do for now. QoL in the future would be to move search from top right of table to here
         box(width=4,
-          sliderInput("Age", "Age:", min = 16, max = 54, step = 1, value = c(16, 54)),
+          sliderInput("Age", "Age:", min = 0, max = 54, step = 1, value = c(0, 54)),
           sliderInput("Value", "Value:", min = 0, max = max(fifa_data_all_years[[6]]$Value), step = 1000000, value = c(0, max(fifa_data_all_years[[6]]$Value)), pre = "€"),
           sliderInput("Wage", "Wage:", min = 0, max = max(fifa_data_all_years[[6]]$Wage), step = 10000, value = c(0, max(fifa_data_all_years[[6]]$Wage)), pre = "€"),
           sliderInput("Overall", "Overall:", min = 0, max = max(fifa_data_all_years[[6]]$Overall), step = 1, value = c(0, max(fifa_data_all_years[[6]]$Overall))),
