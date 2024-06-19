@@ -95,7 +95,7 @@ fifa_data_all_years <- lapply(years, function(year) {
 })
 
 # Add the school data
-new_row<-list("Index"=13644,"ID"=0,"Name"="[SCHOOL NAME]","Age"=11,"Nationality"="England","Overall"=91, "Potential"=99,"Club"="Morecambe F.C.",  "Value"=100000000,   "Wage"=350000,    "Special"=0, "Preferred Foot"="Right", "International Reputation"=5,"Weak Foot"=3,       "Skill Moves"=5,     "Work Rate"="High/High",      "Body Type"="Unique",       "Height"="179cm",  "Weight"="69kg",  "Crossing"=90,       "Finishing"=90,       "HeadingAccuracy"=90, "ShortPassing"=89,    "Volleys"=90,"Dribbling"=94,       "Curve"=90,  "FKAccuracy"=90,      "LongPassing"=82,    "BallControl"=82,     "Acceleration"=93,    "SprintSpeed"=97,     "Agility"=97,        "Reactions"=88,       "Balance"=90,"ShotPower"=90,       "Jumping"=90,        "Stamina"=90,"Strength"=85,        "LongShots"=90,       "Aggression"=90,     "Interceptions"=90,   "Positioning"=93,     "Vision"=90, "Penalties"=90,      "Composure"=91,       "Marking"=93,"StandingTackle"=90,  "SlidingTackle"=90,  "GKDiving"=10,        "GKHandling"=10,      "GKKicking"=10,       "GKPositioning"=10,  "GKReflexes"=10,      "Preferred Position"="RM" ,  "Best Overall Rating"=91,   "Pace"=95,  "Shooting"=91,        "Passing"=90,"Defending"=91,       "Physicality"=89)   
+new_row<-list("Index"=13644,"ID"=0,"Name"="Bowerham Primary School","Age"=11,"Nationality"="England","Overall"=91, "Potential"=99,"Club"="Morecambe F.C.",  "Value"=100000000,   "Wage"=350000,    "Special"=0, "Preferred Foot"="Right", "International Reputation"=5,"Weak Foot"=3,       "Skill Moves"=5,     "Work Rate"="High/High",      "Body Type"="Unique",       "Height"="179cm",  "Weight"="69kg",  "Crossing"=90,       "Finishing"=90,       "HeadingAccuracy"=90, "ShortPassing"=89,    "Volleys"=90,"Dribbling"=94,       "Curve"=90,  "FKAccuracy"=90,      "LongPassing"=82,    "BallControl"=82,     "Acceleration"=93,    "SprintSpeed"=97,     "Agility"=97,        "Reactions"=88,       "Balance"=90,"ShotPower"=90,       "Jumping"=90,        "Stamina"=90,"Strength"=85,        "LongShots"=90,       "Aggression"=90,     "Interceptions"=90,   "Positioning"=93,     "Vision"=90, "Penalties"=90,      "Composure"=91,       "Marking"=93,"StandingTackle"=90,  "SlidingTackle"=90,  "GKDiving"=10,        "GKHandling"=10,      "GKKicking"=10,       "GKPositioning"=10,  "GKReflexes"=10,      "Preferred Position"="RM" ,  "Best Overall Rating"=91,   "Pace"=95,  "Shooting"=91,        "Passing"=90,"Defending"=91,       "Physicality"=89)   
 fifa_data_all_years[[6]] <- rbind(fifa_data_all_years[[6]], new_row)
 
 
@@ -136,8 +136,18 @@ ui <- dashboardPage(
           fluidRow(
             tabBox(width=12,
               id = "HomeTabs",
-              tabPanel("Welcome", icon=icon('house'),"[Insert information introducing students to the app]"),
-              tabPanel("Tasks", icon=icon('rectangle-list'), "[Give a list of tasks for students to complete]")
+              tabPanel("Welcome", icon=icon('house'),
+                       h3("Who to Scout Questions?"),
+                       tags$p("Go to who to sign and complete the scenarios!"),
+                       h3("Ultimate Scouter App Questions"),
+                       tags$ol(
+                         tags$li("Who's the highest rated player who's valued at €80m or less?"),
+                         tags$li("Find Jude Bellingham, what is his potential? Is this still the case now or do you think it should be higher?"),
+                         tags$li("Find Mason Mount. What was his rating in 2017?"),
+                         tags$li("Find Bukayo Saka, compare him to Phil Foden in the Comparison tab. Who would you say is better?"),
+                         tags$li("Who's the oldest player with a rating between 80 and 90?"),
+                         tags$li("Find the School Player. Compare their skills to the Man City, Morecambe and Benfica players.")
+                       ))
             ),
           ),
           ),
@@ -195,9 +205,10 @@ ui <- dashboardPage(
           fluidRow(
             box(width=4,
             selectInput("ws2_player_select_man_city", "Select a Player:",
-              c("Erling Haaland" = 224,
+              c(
                               "Nicolas Otmamendi" = 2150,
                               "Jean Michael Seri" = 560,
+                              "Erling Haaland" = 224,
                               "Tom Lowery" = 4937,
                               "Thorgan Hazard" = 276
               )),
