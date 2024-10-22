@@ -94,11 +94,16 @@ fifa_data_all_years <- lapply(years, function(year) {
   read_csv(paste0("data/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
 })
 
-# Read school data
-school_data <- read.csv('./custom_data/SCHOOLNAME.csv')
+school_datas <- paste0('./custom_data/', list.files(path = "./custom_data/", pattern = "*.csv")) %>% map_df(~read_csv(.))
+
+
 # Add index and ID to front of CV. ID=0 and the index is the last row of the length of the DF
-school_meta_data <- list(Index=nrow(fifa_data_all_years[[6]]), ID=0)
-school_data<-bind_cols(school_meta_data, school_data)
+# TODO broken
+school_meta_data <- data.frame(Index = double(), ID=double())
+for (i in 1:nrow(school_datas)) {
+  school_meta_data[i,] <- c(nrow(fifa_data_all_years[[6]])+i,max(fifa_data_all_years[[1]]$ID)+i)
+}
+school_data <- bind_cols(school_meta_data, school_datas)
 fifa_data_all_years[[6]]<-bind_rows(school_data, fifa_data_all_years[[6]])
 
 
