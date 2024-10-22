@@ -33,7 +33,7 @@ highlight <- function(x, value, col.value, col=NA, ...){
   hist(x, col=cols, breaks=30, main=NULL, xlab=NULL, ylab='Frequency')
 }
 
-# Function for plotting player overall and potential over the games
+# Function for plotting pl ayer overall and potential over the games
 plot_player_rating <- function(player_name) {
   player_overalls <- c()
   player_potentials <- c()
