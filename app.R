@@ -94,9 +94,17 @@ fifa_data_all_years <- lapply(years, function(year) {
   read_csv(paste0("data/FIFA_", 2000+year, "_data.csv"), skip_empty_rows = TRUE, show_col_types = FALSE, locale = readr::locale(encoding = "UTF-8"))
 })
 
-# Add the school data
-new_row<-list("Index"=13644,"ID"=0,"Name"="Bowerham Primary School","Age"=11,"Nationality"="England","Overall"=91, "Potential"=99,"Club"="Morecambe F.C.",  "Value"=100000000,   "Wage"=350000,    "Special"=0, "Preferred Foot"="Right", "International Reputation"=5,"Weak Foot"=3,       "Skill Moves"=5,     "Work Rate"="High/High",      "Body Type"="Unique",       "Height"="179cm",  "Weight"="69kg",  "Crossing"=90,       "Finishing"=90,       "HeadingAccuracy"=90, "ShortPassing"=89,    "Volleys"=90,"Dribbling"=94,       "Curve"=90,  "FKAccuracy"=90,      "LongPassing"=82,    "BallControl"=82,     "Acceleration"=93,    "SprintSpeed"=97,     "Agility"=97,        "Reactions"=88,       "Balance"=90,"ShotPower"=90,       "Jumping"=90,        "Stamina"=90,"Strength"=85,        "LongShots"=90,       "Aggression"=90,     "Interceptions"=90,   "Positioning"=93,     "Vision"=90, "Penalties"=90,      "Composure"=91,       "Marking"=93,"StandingTackle"=90,  "SlidingTackle"=90,  "GKDiving"=10,        "GKHandling"=10,      "GKKicking"=10,       "GKPositioning"=10,  "GKReflexes"=10,      "Preferred Position"="RM" ,  "Best Overall Rating"=91,   "Pace"=95,  "Shooting"=91,        "Passing"=90,"Defending"=91,       "Physicality"=89)   
-fifa_data_all_years[[6]] <- rbind(fifa_data_all_years[[6]], new_row)
+school_datas <- paste0('./custom_data/', list.files(path = "./custom_data/", pattern = "*.csv")) %>% map_df(~read_csv(.))
+
+
+# Add index and ID to front of CV. ID=0 and the index is the last row of the length of the DF
+# TODO broken
+school_meta_data <- data.frame(Index = double(), ID=double())
+for (i in 1:nrow(school_datas)) {
+  school_meta_data[i,] <- c(nrow(fifa_data_all_years[[6]])+i,max(fifa_data_all_years[[1]]$ID)+i)
+}
+school_data <- bind_cols(school_meta_data, school_datas)
+fifa_data_all_years[[6]]<-bind_rows(school_data, fifa_data_all_years[[6]])
 
 
 value_table <- read_csv('data/value_table.csv', show_col_types = FALSE) %>% 
