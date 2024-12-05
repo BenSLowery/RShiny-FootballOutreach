@@ -104,7 +104,7 @@ for (i in 1:nrow(school_datas)) {
   school_meta_data[i,] <- c(nrow(fifa_data_all_years[[6]])+i,max(fifa_data_all_years[[1]]$ID)+i)
 }
 school_data <- bind_cols(school_meta_data, school_datas)
-fifa_data_all_years[[6]]<-bind_rows(school_data, fifa_data_all_years[[6]])
+fifa_data_all_years[[6]]<-bind_rows(fifa_data_all_years[[6]],school_data)
 
 
 value_table <- read_csv('data/value_table.csv', show_col_types = FALSE) %>% 
